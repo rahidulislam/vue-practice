@@ -22,7 +22,8 @@
                           'seat-sold': seat.type === 'sold',
                           'seat-selected': seat.type === 'selected' 
                           }" 
-                          v-for="seat in seats" :key="seat.name"
+                          v-for="(seat,i) in seats" :key="seat.name"
+                          @click="handleSeat(i)"
                           >
                           {{ seat.name }}
                           </div>
@@ -186,7 +187,15 @@ export default {
 
     },
     methods: {
-
+        handleSeat(i){
+            let seatClicked = this.seats[i]
+            if(seatClicked.type === "sold" || seatClicked.type === "booked"){
+                alert("You are not allowed for selecting this seat");
+                return ;
+            }
+            seatClicked.type = seatClicked.type === "selected" ? "available":"selected"
+            console.log(seatClicked)
+        }
     }
 }
 </script>
