@@ -1,7 +1,31 @@
 <template>
   <h1 class="app-title">Ticket Booking APP</h1>
   <div class="ticket-app">
-      <div class="ticket-app-top">
+      <div v-if="confirmed">
+          <h3>Ticket Confirmed</h3>
+          <p>Passanger Name: {{ name }}</p>
+          <p>Passanger Mobile: {{ mobile }}</p>
+          <table>
+              <thead>
+                  <tr>
+                      <th>Seat</th>
+                      <th>Price</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr v-for="seat in selectedSeat" :key="seat.name">
+                      <td>{{ seat.name }}</td>
+                      <td>{{ seat.price }}</td>
+                  </tr>
+                  <tr>
+                      <td>Total Price</td>
+                      <td>{{ totalCost }}</td>
+                  </tr>
+              </tbody>
+          </table>
+          <button @click="resetData">Book Agagin</button>
+      </div>
+      <div class="ticket-app-top" v-else>
           <div class="seat-states">
             <div class="seat-state" v-for="(value,key) in seatStates" :key="key">
                 <div class="seat-state-color" :style="{backgroundColor:value.color}"></div>
@@ -30,7 +54,48 @@
                   </div>
               </div>
         </div>
-        <div class="ticket-app-right"></div>
+        <div v-if="selectedSeat.length === 0">
+            No Selected Seats
+        </div>
+        <div class="ticket-app-right" v-else>
+            <div class="cart">
+                <strong>Selected Seat</strong>
+                <table class="selected-seats" border="1">
+                    <thead>
+                        <tr>
+                            <th>seat</th>
+                            <th>price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(seat,i) in selectedSeat" :key="seat.name">
+                            <td>{{ seat.name }}</td>
+                            <td>{{ seat.price }}</td>
+                        </tr>
+                        <tr v-if="appliedCoupon !== null">
+                            <td>Discount</td>
+                            <td>{{ appliedCoupon.discount }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Cost</td>
+                            <td>{{ totalCost }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p v-if="appliedCoupon === null">
+                    have a coupon?
+                    <input type="text" v-model="couponCode" placeholder="10 digit coupon code">
+                </p>
+                <p v-else>
+                    Applied Coupon {{ appliedCoupon.code }}
+                </p>
+                <div>
+                    <input type="text" v-model="name">
+                    <input type="text" v-model="mobile">
+                </div>
+                <button @click="confirm">Confirm</button>
+            </div>
+        </div>
 
       </div>
   </div>
@@ -41,6 +106,21 @@ export default {
     name: "Part19",
     data(){
         return {
+            name:"",
+            mobile: "",
+            confirmed: false,
+            appliedCoupon: null,
+            couponCode: "",
+            coupons:[
+                {
+                    code: "100TakaOff",
+                    discount: 100
+                },
+                {
+                    code: "200TakaOff",
+                    discount: 200
+                }
+            ],
             seatStates:{
                 sold:{
                     text: "Sold",
@@ -184,7 +264,33 @@ export default {
         }
     },
     computed: {
-
+        selectedSeat(){
+            let st = this.seats.filter(item => item.type === 'selected');
+            return st
+        },
+        totalCost(){
+            let tc = 0;
+            this.selectedSeat.forEach((seat)=>{
+                tc += seat.price
+            });
+            if (this.appliedCoupon !== null){
+                tc -= this.appliedCoupon.discount
+            }
+            return tc;
+        }
+    },
+    watch:{
+        couponCode(newValue){
+            if (newValue.length === 10){
+                let searchCoupon = this.coupons.filter((item) => item.code === newValue)
+                if (searchCoupon.length === 1){
+                    this.appliedCoupon = searchCoupon[0]
+                    this.couponCode=''
+                }else{
+                    alert("coupon not valid")
+                }
+            }
+        }
     },
     methods: {
         handleSeat(i){
@@ -193,9 +299,32 @@ export default {
                 alert("You are not allowed for selecting this seat");
                 return ;
             }
+            if(this.selectedSeat.length > 2){
+                alert("You can not select more than 3 seat");
+                return ;
+            }
             seatClicked.type = seatClicked.type === "selected" ? "available":"selected"
             console.log(seatClicked)
+        },
+        confirm(){
+            if(!this.name || !this.mobile){
+                alert("Mobile or Name is missing")
+            }
+            this.confirmed = true;
+        },
+        resetData(){
+            this.confirmed=false;
+            this.name='';
+            this.mobile='';
+            this.appliedCoupon = null;
+            
+            this.seats.forEach((seat)=>{
+                if (seat.type === 'selected'){
+                    seat.type = 'sold'
+                }
+            })
         }
+
     }
 }
 </script>
@@ -306,5 +435,9 @@ export default {
 }
 .seat:nth-child(4n -1){
     margin-left: 12px;
+}
+.cart{
+    border:1px solid gray;
+    padding: 5px;
 }
 </style>
