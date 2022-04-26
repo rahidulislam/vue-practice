@@ -25,7 +25,7 @@
           </table>
           <button @click="resetData">Book Agagin</button>
       </div>
-      <div class="ticket-app-top" v-else>
+      <div class="ticket-app-top">
           <div class="seat-states">
             <div class="seat-state" v-for="(value,key) in seatStates" :key="key">
                 <div class="seat-state-color" :style="{backgroundColor:value.color}"></div>
@@ -68,7 +68,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(seat,i) in selectedSeat" :key="seat.name">
+                        <tr v-for="seat in selectedSeat" :key="seat.name">
                             <td>{{ seat.name }}</td>
                             <td>{{ seat.price }}</td>
                         </tr>
